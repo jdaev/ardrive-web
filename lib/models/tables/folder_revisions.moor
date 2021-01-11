@@ -1,3 +1,4 @@
+import 'folder_entries.moor';
 import 'network_transactions.moor';
 
 CREATE TABLE folder_revisions (
@@ -10,9 +11,31 @@ CREATE TABLE folder_revisions (
     metadataTxId TEXT NOT NULL,
 
     dateCreated DATETIME NOT NULL DEFAULT (strftime('%s','now')),
-    
+
     [action] TEXT NOT NULL,
 
     PRIMARY KEY (folderId, driveId, dateCreated),
     FOREIGN KEY (metadataTxId) REFERENCES network_transactions(id)
 );
+
+CREATE TRIGGER create_folder_revision_after_update
+   AFTER UPDATE ON folder_entries
+BEGIN
+	INSERT INTO folder_revisions (
+        folderId
+        driveId
+        name
+        parentFolderId,
+        metadataTxId,
+        [action]
+	)
+VALUES
+	(
+        new.folderId,
+        new.driveId,
+        new.name,
+        new.parentFolderId,
+        new.metadataTxId,
+        new.action
+	) ;
+END;
